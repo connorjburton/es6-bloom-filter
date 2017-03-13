@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/connorjburton/es6-spelling-correction/issues"
   },
-  "homepage": "https://github.com/connorjburton/es6-spelling-correction#readme"
+  "homepage": "https://github.com/connorjburton/es6-spelling-correction#readme",
+  "dependencies": {
+    "fnv-lite": "^1.2.0"
+  }
 }
