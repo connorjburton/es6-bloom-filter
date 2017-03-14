@@ -18,6 +18,6 @@
   },
   "homepage": "https://github.com/connorjburton/es6-spelling-correction#readme",
   "dependencies": {
-    "fnv-lite": "^1.2.0"
+    "fnv-plus": "^1.2.12"
   }
 }
