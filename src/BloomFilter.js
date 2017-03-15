@@ -1,4 +1,4 @@
-const fnv = require('fnv-plus');
+const farmhash = require('farmhash');
 
 class BloomFilter {
 	constructor(items, input)
@@ -6,7 +6,7 @@ class BloomFilter {
 		const BITS_PER_ITEM = 15; //~0.1% false positive rate
 		this.m = Buffer.alloc(items.length * BITS_PER_ITEM); // setup bit array
 		this.k = Math.ceil(BITS_PER_ITEM * 0.7); // amount of hash functions we need to use
-		this.seeds = [null]; // we don't need to seed the first hash function
+		this.seeds = [];
 		this.input = input;
 		this.items = items;
 
@@ -14,25 +14,39 @@ class BloomFilter {
 		this.insertItems();
 	}
 
-	setSeeds()
+	get time()
 	{
-		for(let i = 0; i <= this.k; i++) this.seeds.push(Math.floor(Math.random() * 100));
+		let hrTime = process.hrtime()
+		return hrTime[1];
 	}
 
+	setSeeds()
+	{
+		for(let i = 0; i <= this.k; i++) this.seeds.push(this.time);
+	}
+	
 	insertItems()
 	{
 		console.log('Total buffer size: ' + this.m.length);
+
 		let collisions = 0;
-		this.items.forEach(value => {
-			this.seeds.forEach(seed => {
-				if(seed) fnv.seed(seed);
-				let index = fnv.hash(value).dec() % this.m.length;
+		this.items.forEach(value => {			
+			this.getBufferIndices(value).map(index => {
 				if(this.m[index] === 1) collisions++;
 				this.m[index] = 1;
 			});
 		});
 
 		console.log('Total collisions: ' + collisions);
+	}
+
+	getBufferIndices(value)
+	{
+		let indicies = [];
+
+		this.seeds.forEach(seed => indicies.push(farmhash.hash32WithSeed(value, seed) % this.m.length));
+
+		return indicies;
 	}
 }
 
