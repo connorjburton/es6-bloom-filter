@@ -4,7 +4,7 @@ class BloomFilter {
 	constructor(items, debug)
 	{
 		const BITS_PER_ITEM = 15; //~0.1% false positive rate
-		this.m = Buffer.alloc(items.length * BITS_PER_ITEM); // setup bit array
+		this.m = Buffer.alloc(items.length * BITS_PER_ITEM); // setup buffer with correct bit length (all values are 0)
 		this.k = Math.ceil(BITS_PER_ITEM * 0.7); // amount of hash functions we need to use
 		this.seeds = [];
 		this.items = items;
