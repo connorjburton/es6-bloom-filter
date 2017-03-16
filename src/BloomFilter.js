@@ -25,7 +25,7 @@ class BloomFilter {
 		for(let i = 0; i <= this.k; i++) this.seeds.push(this.time);
 	}
 	
-	insertItems()
+	insertItems() // needs refactoring to not depend on this.items
 	{
 		if(this.debug) console.log('Total buffer size: ' + this.m.length.toLocaleString() + ' bits');
 
@@ -39,13 +39,16 @@ class BloomFilter {
 			if(overlap === this.k) collisions++;
 		});
 
-		if(this.debug) console.log('Total collisions: ' + collisions + ' bits');
-		if(this.debug) console.log('Collision Rate: ' + collisions / this.m.length + '% (chance of false positive)');
+		if(this.debug) {
+			console.log('Total collisions: ' + collisions + ' bits');
+			console.log('Collision Rate: ' + collisions / this.m.length + '% (chance of false positive)');
+		}
 	}
 
 	checkItem(item)
 	{
 		let count = -1;
+
 		this.getBufferIndices(item).forEach(index => {
 			if(this.m[index] === 1) count++;
 		});
