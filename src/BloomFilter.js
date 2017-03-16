@@ -1,14 +1,14 @@
 const farmhash = require('farmhash');
 
 class BloomFilter {
-	constructor(items, input)
+	constructor(items, debug)
 	{
 		const BITS_PER_ITEM = 15; //~0.1% false positive rate
 		this.m = Buffer.alloc(items.length * BITS_PER_ITEM); // setup bit array
 		this.k = Math.ceil(BITS_PER_ITEM * 0.7); // amount of hash functions we need to use
 		this.seeds = [];
-		this.input = input;
 		this.items = items;
+		this.debug = debug;
 
 		this.setSeeds();
 		this.insertItems();
@@ -27,17 +27,30 @@ class BloomFilter {
 	
 	insertItems()
 	{
-		console.log('Total buffer size: ' + this.m.length);
+		if(this.debug) console.log('Total buffer size: ' + this.m.length.toLocaleString() + ' bits');
 
 		let collisions = 0;
-		this.items.forEach(value => {			
-			this.getBufferIndices(value).map(index => {
-				if(this.m[index] === 1) collisions++;
+		this.items.forEach(value => {
+			let overlap = 0;
+			this.getBufferIndices(value).forEach(index => {
+				if(this.m[index] === 1) overlap++;
 				this.m[index] = 1;
 			});
+			if(overlap === this.k) collisions++;
 		});
 
-		console.log('Total collisions: ' + collisions);
+		if(this.debug) console.log('Total collisions: ' + collisions + ' bits');
+		if(this.debug) console.log('Collision Rate: ' + collisions / this.m.length + '% (chance of false positive)');
+	}
+
+	checkItem(item)
+	{
+		let count = -1;
+		this.getBufferIndices(item).forEach(index => {
+			if(this.m[index] === 1) count++;
+		});
+
+		return (count === this.k);
 	}
 
 	getBufferIndices(value)
