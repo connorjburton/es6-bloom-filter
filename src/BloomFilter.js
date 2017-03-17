@@ -5,7 +5,7 @@ class BloomFilter {
 	{
 		const BITS_PER_ITEM = 10; //~0.001% false positive rate
 		this.m = Buffer.alloc(items.length * BITS_PER_ITEM); // setup buffer with correct bit length (all values are 0)
-		this.k = Math.ceil(BITS_PER_ITEM * 0.7); // amount of hash functions we need to use
+		this.k = Math.ceil(this.m.length / items.length * Math.log(2)); // amount of hash functions we need to use
 		this.seeds = [];
 		this.items = items;
 		this.debug = debug;
@@ -33,8 +33,11 @@ class BloomFilter {
 		this.items.forEach(value => {
 			let overlap = 0;
 			this.getBufferIndices(value).forEach(index => {
-				if(this.m[index] === 1) overlap++;
-				this.m[index] = 1;
+				if(this.m[index] === 1) {
+					overlap++;
+				} else {
+					this.m[index] = 1;
+				}
 			});
 			if(overlap === this.k) collisions++;
 		});
