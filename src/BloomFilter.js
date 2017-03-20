@@ -9,9 +9,10 @@ class BloomFilter {
 		this.seeds = [];
 		this.items = items;
 		this.debug = debug;
+		this.collisions = 0;
 
 		this.setSeeds();
-		this.insertItems();
+		this.bulkInsert();
 	}
 
 	get time()
@@ -25,40 +26,47 @@ class BloomFilter {
 		for(let i = 0; i <= this.k; i++) this.seeds.push(this.time);
 	}
 	
-	insertItems() // needs refactoring to not depend on this.items
+	bulkInsert()
 	{
+		if(this.debug) console.time('Bulk Insert');
 		if(this.debug) console.log('Total buffer size: ' + this.m.length.toLocaleString() + ' bits');
 
-		let collisions = 0;
-		this.items.forEach(value => {
-			let overlap = 0;
-			this.getBufferIndices(value).forEach(index => {
-				if(this.m[index] === 1) {
-					overlap++;
-				} else {
-					this.m[index] = 1;
-				}
-			});
-			if(overlap === this.k) collisions++;
-		});
+		this.items.forEach(value => this.insertItem(value));
 
 		if(this.debug) {
-			console.log('Total collisions: ' + collisions + ' bits');
-			console.log('Collision Rate: ' + collisions / this.m.length + '% (chance of false positive)');
+			console.log('Total collisions: ' + this.collisions + ' bits');
+			console.log('Collision Rate: ' + (this.collisions / this.m.length).toFixed(5) + '% (chance of false positive)');
+			console.timeEnd('Bulk Insert')
 		}
+	}
+
+	insertItem(item)
+	{
+		let overlap = 0;
+		this.getBufferIndices(item).forEach(index => {
+			if(this.m[index] === 1) {
+				overlap++;
+			} else {
+				this.m[index] = 1;
+			}
+		});
+		if(overlap === this.k) this.collisions++;
 	}
 
 	checkItem(item)
 	{
+		if(this.debug) console.time('Check Item');
 		let count = -1;
 
 		this.getBufferIndices(item).forEach(index => {
 			if(this.m[index] === 1) count++;
 		});
 
+		if(this.debug) console.timeEnd('Check Item');
+
 		return (count === this.k);
 	}
-
+	
 	getBufferIndices(value)
 	{
 		let indicies = [];
